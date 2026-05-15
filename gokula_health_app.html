@@ -1,0 +1,553 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:#0d1f0e;color:#e8f5e8;min-height:100vh;overflow-x:hidden}
+:root{
+  --green:#2d7a2d;--green-light:#4caf50;--green-pale:#e8f5e8;
+  --amber:#f59e0b;--amber-light:#fbbf24;
+  --red:#dc2626;--red-light:#ef4444;
+  --card:#1a2e1a;--card2:#243324;--border:#2d4a2d;
+  --text:#e8f5e8;--muted:#8faa8f;--accent:#7fff7f;
+}
+.app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.header{background:linear-gradient(135deg,#1a4a1a,#0d2a0d);padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{width:44px;height:44px;background:var(--green);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.header-text h1{font-size:18px;font-weight:700;color:var(--accent)}
+.header-text p{font-size:11px;color:var(--muted)}
+.nav{display:flex;background:#0d1f0e;border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100}
+.nav-btn{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Sora',sans-serif;transition:color 0.2s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn i{font-size:20px}
+.content{flex:1;overflow-y:auto;padding:0 0 8px}
+.page{display:none;padding:16px;gap:12px;flex-direction:column}
+.page.active{display:flex}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--green-light);font-size:16px}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#1a4a1a;color:var(--accent)}
+.badge-amber{background:#3a2a00;color:var(--amber-light)}
+.badge-red{background:#3a0a0a;color:var(--red-light)}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.stat{background:var(--card2);border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-size:22px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.stat-label{font-size:10px;color:var(--muted);margin-top:2px}
+.cow-list{display:flex;flex-direction:column;gap:8px}
+.cow-card{background:var(--card2);border-radius:12px;padding:12px;display:flex;align-items:center;gap:10px;cursor:pointer;border:1px solid transparent;transition:border-color 0.2s}
+.cow-card:hover,.cow-card.selected{border-color:var(--green-light)}
+.cow-avatar{width:44px;height:44px;border-radius:50%;background:#1a4a1a;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cow-info{flex:1}
+.cow-name{font-size:14px;font-weight:600}
+.cow-tag{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.cow-yield{font-size:13px;color:var(--accent);font-weight:600;text-align:right}
+.cow-yield small{display:block;font-size:10px;color:var(--muted);font-weight:400}
+.section-label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.diary-entry{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.diary-entry:last-child{border-bottom:none}
+.diary-time{font-size:11px;color:var(--muted);width:40px;flex-shrink:0}
+.diary-bar-wrap{flex:1;height:8px;background:#0d1f0e;border-radius:4px;overflow:hidden}
+.diary-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--accent))}
+.diary-val{font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent);width:50px;text-align:right}
+.vacc-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.vacc-item:last-child{border-bottom:none}
+.vacc-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.vacc-icon.due{background:#3a2a00}
+.vacc-icon.ok{background:#1a4a1a}
+.vacc-icon.overdue{background:#3a0a0a}
+.vacc-info{flex:1}
+.vacc-name{font-size:13px;font-weight:600}
+.vacc-date{font-size:11px;color:var(--muted)}
+.vacc-status{font-size:11px;font-weight:600}
+.vacc-status.due{color:var(--amber-light)}
+.vacc-status.ok{color:var(--accent)}
+.vacc-status.overdue{color:var(--red-light)}
+.input-row{display:flex;gap:8px;margin-top:8px}
+input,select{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:'Sora',sans-serif;font-size:13px;flex:1;outline:none}
+input:focus,select:focus{border-color:var(--green-light)}
+button.primary{background:var(--green);border:none;border-radius:8px;padding:9px 16px;color:#fff;font-family:'Sora',sans-serif;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0}
+button.primary:hover{background:var(--green-light)}
+.chart-wrap{position:relative;height:160px;margin-top:8px}
+.alert-banner{background:#3a2a00;border:1px solid #6a4a00;border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.alert-banner i{color:var(--amber-light);font-size:20px}
+.alert-text{font-size:12px;color:var(--amber-light)}
+.alert-text strong{display:block;font-size:13px}
+.add-form{background:var(--card2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.form-row{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;color:var(--muted);font-weight:600}
+.tag-id{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.pill{padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);color:var(--muted);cursor:pointer;background:transparent}
+.pill.active{background:var(--green);border-color:var(--green);color:#fff}
+.health-score{text-align:center;padding:12px 0}
+.score-ring{width:80px;height:80px;margin:0 auto 8px;position:relative}
+.score-ring svg{transform:rotate(-90deg)}
+.score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.trend-up{color:var(--accent);font-size:11px}
+.trend-down{color:var(--red-light);font-size:11px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">🐄</div>
+    <div class="header-text">
+      <h1>Gokula-Health</h1>
+      <p>Digital Health Card for Cattle</p>
+    </div>
+    <div style="margin-left:auto;background:#1a4a1a;border-radius:8px;padding:6px 10px;font-size:11px;color:var(--accent);display:flex;align-items:center;gap:4px">
+      <i class="ti ti-wifi-off" style="font-size:14px"></i> Offline
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-home">
+      <div class="alert-banner">
+        <i class="ti ti-alert-triangle"></i>
+        <div class="alert-text">
+          <strong>⚠ Vaccination Due</strong>
+          Gauri — FMD booster in 2 days
+        </div>
+      </div>
+      <div class="alert-banner" style="background:#3a0a0a;border-color:#6a1a1a">
+        <i class="ti ti-heart-broken" style="color:var(--red-light)"></i>
+        <div class="alert-text" style="color:var(--red-light)">
+          <strong>⚡ Yield Drop Detected</strong>
+          Lakshmi — 22% drop this week
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-val">4</div><div class="stat-label">🐄 Total Cattle</div></div>
+        <div class="stat"><div class="stat-val">47.2</div><div class="stat-label">🥛 Litres Today</div></div>
+        <div class="stat"><div class="stat-val">2</div><div class="stat-label">💉 Vacc Due Soon</div></div>
+        <div class="stat"><div class="stat-val">89%</div><div class="stat-label">❤ Herd Health</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-chart-line"></i> Herd Yield — 30 Days</div>
+          <span class="badge badge-green">↑ 8% avg</span>
+        </div>
+        <div class="chart-wrap"><canvas id="herd-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-cow"></i> My Cattle</div>
+          <span class="badge badge-amber">4 registered</span>
+        </div>
+        <div class="cow-list" id="cow-list-home"></div>
+      </div>
+    </div>
+
+    <!-- CATTLE PROFILES -->
+    <div class="page" id="page-cattle">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px"><i class="ti ti-cow"></i> Cattle Profiles</div>
+        <div class="cow-list" id="cow-list-full"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px"><i class="ti ti-plus-circle"></i> Register New Cattle</div>
+        <div class="add-form">
+          <div class="form-row">
+            <div class="form-label">Cow Name</div>
+            <input id="new-name" type="text" placeholder="e.g. Kamdhenu"/>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Ear Tag ID</div>
+            <input id="new-tag" type="text" placeholder="e.g. GK-005" style="font-family:'JetBrains Mono',monospace"/>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Breed</div>
+            <select id="new-breed">
+              <option>Gir</option><option>Sahiwal</option><option>Red Sindhi</option>
+              <option>Holstein Friesian</option><option>Jersey</option><option>Tharparkar</option>
+            </select>
+          </div>
+          <div class="form-label">Age Group</div>
+          <div class="pill-row">
+            <div class="pill active" onclick="selectPill(this,'age')">Calf (0-1yr)</div>
+            <div class="pill" onclick="selectPill(this,'age')">Heifer (1-3yr)</div>
+            <div class="pill" onclick="selectPill(this,'age')">Adult (3+yr)</div>
+          </div>
+          <button class="primary" onclick="addCow()" style="margin-top:4px"><i class="ti ti-plus"></i> Register Cow</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MILK DIARY -->
+    <div class="page" id="page-diary">
+      <div id="cow-selector-wrap">
+        <div class="section-label">Select Cow</div>
+        <div class="pill-row" id="cow-pills"></div>
+      </div>
+      <div class="card" id="diary-card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-droplet"></i> <span id="diary-cow-name">Gauri</span>'s Milk Diary</div>
+          <span class="badge badge-green" id="monthly-avg">Avg: 11.8L</span>
+        </div>
+        <div style="margin-bottom:8px">
+          <div class="section-label">Log Today's Yield</div>
+          <div class="input-row">
+            <select id="session-select" style="max-width:110px">
+              <option>🌅 Morning</option><option>🌆 Evening</option>
+            </select>
+            <input id="yield-input" type="number" placeholder="Litres" min="0" max="30" step="0.5"/>
+            <button class="primary" onclick="logYield()">Log</button>
+          </div>
+        </div>
+        <div class="section-label">Today's Sessions</div>
+        <div id="today-sessions">
+          <div class="diary-entry">
+            <div class="diary-time">🌅 AM</div>
+            <div class="diary-bar-wrap"><div class="diary-bar" style="width:72%"></div></div>
+            <div class="diary-val">7.2L</div>
+          </div>
+          <div class="diary-entry">
+            <div class="diary-time">🌆 PM</div>
+            <div class="diary-bar-wrap"><div class="diary-bar" style="width:45%"></div></div>
+            <div class="diary-val">4.5L</div>
+          </div>
+        </div>
+        <div class="card-header" style="margin-top:14px;margin-bottom:8px">
+          <div class="card-title"><i class="ti ti-chart-bar"></i> 30-Day Yield Graph</div>
+        </div>
+        <div class="chart-wrap"><canvas id="yield-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px"><i class="ti ti-calculator"></i> Monthly Stats</div>
+        <div class="stat-row">
+          <div class="stat"><div class="stat-val" id="stat-total">353L</div><div class="stat-label">Total (30d)</div></div>
+          <div class="stat"><div class="stat-val" id="stat-avg">11.8L</div><div class="stat-label">Daily Avg</div></div>
+          <div class="stat"><div class="stat-val" id="stat-best">14.2L</div><div class="stat-label">Best Day</div></div>
+          <div class="stat"><div class="stat-val" id="stat-trend">↑8%</div><div class="stat-label">vs Last Month</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VACCINATIONS -->
+    <div class="page" id="page-vacc">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px"><i class="ti ti-vaccine"></i> Vaccination Schedule</div>
+        <div id="vacc-list">
+          <div class="vacc-item">
+            <div class="vacc-icon overdue"><i class="ti ti-alert-circle" style="color:var(--red-light)"></i></div>
+            <div class="vacc-info">
+              <div class="vacc-name">Lakshmi — FMD Vaccine</div>
+              <div class="vacc-date">Due: 3 days ago · Next: Jun 15</div>
+            </div>
+            <div class="vacc-status overdue">OVERDUE</div>
+          </div>
+          <div class="vacc-item">
+            <div class="vacc-icon due"><i class="ti ti-clock" style="color:var(--amber-light)"></i></div>
+            <div class="vacc-info">
+              <div class="vacc-name">Gauri — FMD Booster</div>
+              <div class="vacc-date">Due: In 2 days · May 13</div>
+            </div>
+            <div class="vacc-status due">DUE SOON</div>
+          </div>
+          <div class="vacc-item">
+            <div class="vacc-icon ok"><i class="ti ti-check" style="color:var(--accent)"></i></div>
+            <div class="vacc-info">
+              <div class="vacc-name">Nandini — BQ Shot</div>
+              <div class="vacc-date">Done: Apr 20 · Next: Oct 20</div>
+            </div>
+            <div class="vacc-status ok">UP TO DATE</div>
+          </div>
+          <div class="vacc-item">
+            <div class="vacc-icon ok"><i class="ti ti-check" style="color:var(--accent)"></i></div>
+            <div class="vacc-info">
+              <div class="vacc-name">Kamdhenu — HS Vaccine</div>
+              <div class="vacc-date">Done: Mar 1 · Next: Sep 1</div>
+            </div>
+            <div class="vacc-status ok">UP TO DATE</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:10px"><i class="ti ti-plus-circle"></i> Log Vaccination</div>
+        <div class="add-form">
+          <div class="form-row">
+            <div class="form-label">Select Cow</div>
+            <select><option>Gauri</option><option>Lakshmi</option><option>Nandini</option><option>Kamdhenu</option></select>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Vaccine Type</div>
+            <select><option>FMD (Foot & Mouth Disease)</option><option>BQ (Black Quarter)</option><option>HS (Haemorrhagic Septicaemia)</option><option>Brucellosis</option><option>Other</option></select>
+          </div>
+          <div class="form-row">
+            <div class="form-label">Date Given</div>
+            <input type="date" id="vacc-date"/>
+          </div>
+          <button class="primary" onclick="alert('✅ Vaccination logged & reminder set!')"><i class="ti ti-device-floppy"></i> Save & Set Reminder</button>
+        </div>
+      </div>
+      <div class="card" style="background:#1a4a1a;border-color:#2d7a2d">
+        <div class="card-title" style="margin-bottom:6px"><i class="ti ti-shield-check" style="color:var(--accent)"></i> Coverage Report</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+          <div style="flex:1">
+            <div style="height:10px;background:#0d1f0e;border-radius:5px;overflow:hidden">
+              <div style="width:75%;height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:5px"></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">3 of 4 cattle fully vaccinated</div>
+          </div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace">75%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEALTH PASSPORT -->
+    <div class="page" id="page-passport">
+      <div class="pill-row" id="passport-pills"></div>
+      <div class="card" id="passport-card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:54px;height:54px;border-radius:50%;background:#1a4a1a;display:flex;align-items:center;justify-content:center;font-size:28px">🐄</div>
+          <div style="flex:1">
+            <div style="font-size:17px;font-weight:700" id="pp-name">Gauri</div>
+            <div class="tag-id" style="font-size:12px" id="pp-tag">GK-001</div>
+            <div style="font-size:11px;color:var(--muted)" id="pp-breed">Gir Cow · Adult · 5 yrs</div>
+          </div>
+          <div style="text-align:center">
+            <div class="score-ring">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="32" fill="none" stroke="#1a4a1a" stroke-width="8"/>
+                <circle cx="40" cy="40" r="32" fill="none" stroke="#4caf50" stroke-width="8" stroke-dasharray="171" stroke-dashoffset="26" stroke-linecap="round"/>
+              </svg>
+              <div class="score-text">85</div>
+            </div>
+            <div style="font-size:10px;color:var(--muted)">Health Score</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div class="stat"><div class="stat-val">11.8L</div><div class="stat-label">Daily Avg Yield</div></div>
+          <div class="stat"><div class="stat-val">Mar'25</div><div class="stat-label">Last Calving</div></div>
+          <div class="stat"><div class="stat-val">4</div><div class="stat-label">Calves Born</div></div>
+          <div class="stat"><div class="stat-val">21d</div><div class="stat-label">Heat Cycle</div></div>
+        </div>
+        <div class="section-label">Vaccination History</div>
+        <div style="margin-top:8px">
+          <div class="vacc-item" style="padding:6px 0">
+            <div class="vacc-icon ok" style="width:28px;height:28px;border-radius:7px"><i class="ti ti-check" style="color:var(--accent);font-size:14px"></i></div>
+            <div class="vacc-info"><div class="vacc-name" style="font-size:12px">FMD Vaccine</div><div class="vacc-date">Nov 13, 2025</div></div>
+            <span class="badge badge-green">Done</span>
+          </div>
+          <div class="vacc-item" style="padding:6px 0">
+            <div class="vacc-icon ok" style="width:28px;height:28px;border-radius:7px"><i class="ti ti-check" style="color:var(--accent);font-size:14px"></i></div>
+            <div class="vacc-info"><div class="vacc-name" style="font-size:12px">BQ Shot</div><div class="vacc-date">Aug 5, 2025</div></div>
+            <span class="badge badge-green">Done</span>
+          </div>
+          <div class="vacc-item" style="padding:6px 0;border:none">
+            <div class="vacc-icon due" style="width:28px;height:28px;border-radius:7px"><i class="ti ti-clock" style="color:var(--amber-light);font-size:14px"></i></div>
+            <div class="vacc-info"><div class="vacc-name" style="font-size:12px">FMD Booster</div><div class="vacc-date">Due: May 13, 2026</div></div>
+            <span class="badge badge-amber">Due</span>
+          </div>
+        </div>
+        <button class="primary" style="width:100%;margin-top:12px;background:#1a3a1a;border:1px solid var(--border);color:var(--accent)" onclick="alert('📄 Health Passport PDF generated! Share with buyer or insurer.')">
+          <i class="ti ti-file-export"></i> Export Health Passport PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn active" onclick="showPage('home',this)" id="nav-home">
+      <i class="ti ti-layout-dashboard"></i>Dashboard
+    </button>
+    <button class="nav-btn" onclick="showPage('cattle',this)">
+      <i class="ti ti-cow"></i>Cattle
+    </button>
+    <button class="nav-btn" onclick="showPage('diary',this)">
+      <i class="ti ti-droplet"></i>Milk Diary
+    </button>
+    <button class="nav-btn" onclick="showPage('vacc',this)">
+      <i class="ti ti-vaccine"></i>Vaccines
+    </button>
+    <button class="nav-btn" onclick="showPage('passport',this)">
+      <i class="ti ti-id-badge"></i>Passport
+    </button>
+  </div>
+</div>
+
+<script>
+const cows = [
+  {name:'Gauri',tag:'GK-001',breed:'Gir',age:'Adult · 5yr',emoji:'🐄',yield:11.8,status:'healthy'},
+  {name:'Lakshmi',tag:'GK-002',breed:'Sahiwal',age:'Adult · 4yr',emoji:'🐄',yield:8.9,status:'alert'},
+  {name:'Nandini',tag:'GK-003',breed:'Holstein',age:'Heifer · 2yr',emoji:'🐄',yield:14.2,status:'healthy'},
+  {name:'Kamdhenu',tag:'GK-004',breed:'Jersey',age:'Adult · 6yr',emoji:'🐄',yield:12.3,status:'healthy'},
+];
+
+let selectedDiaryCow = 0;
+let selectedPassportCow = 0;
+
+function gen30days(base,variance){
+  return Array.from({length:30},(_,i)=>+(base+Math.sin(i/5)*variance+(Math.random()-0.5)*variance*0.5).toFixed(1));
+}
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+}
+
+function renderCowList(containerId, limit) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const list = limit ? cows.slice(0,limit) : cows;
+  el.innerHTML = list.map((c,i)=>`
+    <div class="cow-card" onclick="selectCow(${i})">
+      <div class="cow-avatar">${c.emoji}</div>
+      <div class="cow-info">
+        <div class="cow-name">${c.name}</div>
+        <div class="cow-tag">${c.tag} · ${c.breed}</div>
+      </div>
+      <div class="cow-yield">
+        ${c.yield}L/day
+        <small class="${c.status==='alert'?'trend-down':'trend-up'}">${c.status==='alert'?'↓22%':'↑8%'}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectPill(el,group){
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectCow(idx) {
+  selectedDiaryCow = idx;
+  const c = cows[idx];
+  document.getElementById('diary-cow-name').textContent = c.name;
+  document.getElementById('monthly-avg').textContent = 'Avg: '+c.yield+'L';
+  document.getElementById('stat-total').textContent = Math.round(c.yield*30)+'L';
+  document.getElementById('stat-avg').textContent = c.yield+'L';
+  document.getElementById('stat-best').textContent = (c.yield+2.4).toFixed(1)+'L';
+  updateYieldChart(c.yield);
+}
+
+function renderCowPills(containerId, onSelect) {
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = cows.map((c,i)=>
+    `<div class="pill ${i===0?'active':''}" onclick="(${onSelect})(${i},this)">${c.emoji} ${c.name}</div>`
+  ).join('');
+}
+
+let herdChart, yieldChart;
+
+function initHerdChart(){
+  const ctx = document.getElementById('herd-chart');
+  if(!ctx) return;
+  const labels = Array.from({length:30},(_,i)=>{const d=new Date(2026,3,12+i);return d.getDate()+'/'+( d.getMonth()+1)});
+  const data = gen30days(47,6);
+  herdChart = new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Total Yield (L)',data,
+      borderColor:'#4caf50',backgroundColor:'rgba(76,175,80,0.1)',
+      borderWidth:2,pointRadius:0,fill:true,tension:0.4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#8faa8f',font:{size:9},maxTicksLimit:6},grid:{color:'#1a2e1a'}},
+        y:{ticks:{color:'#8faa8f',font:{size:9}},grid:{color:'#1a2e1a'}}
+      }
+    }
+  });
+}
+
+function updateYieldChart(base){
+  const ctx = document.getElementById('yield-chart');
+  if(!ctx) return;
+  if(yieldChart) yieldChart.destroy();
+  const labels = Array.from({length:30},(_,i)=>i+1);
+  const data = gen30days(base,2);
+  yieldChart = new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'Yield (L)',data,
+      backgroundColor:'rgba(76,175,80,0.5)',borderColor:'#4caf50',borderWidth:1,borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#8faa8f',font:{size:9},maxTicksLimit:10},grid:{color:'#1a2e1a'}},
+        y:{ticks:{color:'#8faa8f',font:{size:9}},grid:{color:'#1a2e1a'}}
+      }
+    }
+  });
+}
+
+function logYield(){
+  const val = parseFloat(document.getElementById('yield-input').value);
+  if(isNaN(val)||val<=0){alert('Please enter a valid yield!');return;}
+  const sess = document.getElementById('session-select').value;
+  const sessionsEl = document.getElementById('today-sessions');
+  const pct = Math.min(100,Math.round((val/15)*100));
+  const icon = sess.includes('Morning')?'🌅 AM':'🌆 PM';
+  const entry = document.createElement('div');
+  entry.className = 'diary-entry';
+  entry.innerHTML = `<div class="diary-time">${icon}</div>
+    <div class="diary-bar-wrap"><div class="diary-bar" style="width:${pct}%"></div></div>
+    <div class="diary-val">${val.toFixed(1)}L</div>`;
+  sessionsEl.appendChild(entry);
+  document.getElementById('yield-input').value='';
+  alert('✅ Yield logged: '+val.toFixed(1)+'L');
+}
+
+function addCow(){
+  const name = document.getElementById('new-name').value.trim();
+  const tag = document.getElementById('new-tag').value.trim();
+  const breed = document.getElementById('new-breed').value;
+  if(!name||!tag){alert('Please fill in name and tag ID!');return;}
+  cows.push({name,tag,breed,age:'Adult',emoji:'🐄',yield:10.0,status:'healthy'});
+  renderCowList('cow-list-home',4);
+  renderCowList('cow-list-full');
+  document.getElementById('new-name').value='';
+  document.getElementById('new-tag').value='';
+  alert('✅ '+name+' registered with tag '+tag+'!');
+}
+
+// Set today's date as default
+const today = new Date().toISOString().split('T')[0];
+const dateEl = document.getElementById('vacc-date');
+if(dateEl) dateEl.value = today;
+
+// Init
+renderCowList('cow-list-home',4);
+renderCowList('cow-list-full');
+
+// Diary pills
+document.getElementById('cow-pills').innerHTML = cows.map((c,i)=>
+  `<div class="pill ${i===0?'active':''}" onclick="selectCow(${i});document.querySelectorAll('#cow-pills .pill').forEach(p=>p.classList.remove('active'));this.classList.add('active')">${c.emoji} ${c.name}</div>`
+).join('');
+
+// Passport pills
+document.getElementById('passport-pills').innerHTML = cows.map((c,i)=>
+  `<div class="pill ${i===0?'active':''}" onclick="switchPassport(${i},this)">${c.emoji} ${c.name}</div>`
+).join('');
+
+function switchPassport(idx, el){
+  document.querySelectorAll('#passport-pills .pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const c = cows[idx];
+  document.getElementById('pp-name').textContent = c.name;
+  document.getElementById('pp-tag').textContent = c.tag;
+  document.getElementById('pp-breed').textContent = c.breed+' · '+c.age;
+}
+
+// Charts init after DOM ready
+setTimeout(()=>{
+  initHerdChart();
+  updateYieldChart(11.8);
+},100);
+</script>
+</body>
+</html>
